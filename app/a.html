@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webcam Capture</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(to right, #00b4db, #0083b0);
+            color: #fff;
+        }
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        #video {
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+        #video.hidden {
+            display: none;
+        }
+        #video:hover {
+            transform: scale(1.05);
+        }
+        #canvas {
+            display: none;
+        }
+        #capturedImage {
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+            margin-top: 20px;
+            max-width: 100%;
+            max-height: 400px;
+            transition: opacity 0.3s ease;
+            opacity: 0;
+        }
+        #capturedImage.show {
+            opacity: 1;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 25px;
+            background-color: #ffffff;
+            color: #0083b0;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #e0e0e0;
+            transform: scale(1.05);
+        }
+        @media (max-width: 768px) {
+            #video {
+                width: 90%;
+            }
+            button {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Webcam Capture</h1>
+    <video id="video" width="640" height="480" autoplay></video>
+    <button id="capture">Capture Photo</button>
+    <button id="closeCamera">Close Camera</button>
+    <canvas id="canvas" width="640" height="480"></canvas>
+    <img id="capturedImage" alt="Captured Image" />
+    
+    <script>
+        // Access the webcam
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+        const capturedImage = document.getElementById('capturedImage');
+        const captureButton = document.getElementById('capture');
+        const closeCameraButton = document.getElementById('closeCamera');
+        
+        let stream = null;
+
+        // Get access to the webcam
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(s => {
+                stream = s;
+                video.srcObject = stream;
+                video.play();
+            })
+            .catch(err => {
+                console.error('Error accessing webcam: ', err);
+            });
+
+        // Capture photo and display it
+        captureButton.addEventListener('click', () => {
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const dataURL = canvas.toDataURL('image/png');
+            capturedImage.src = dataURL;
+            capturedImage.classList.add('show');
+        });
+
+        // Close the camera
+        closeCameraButton.addEventListener('click', () => {
+            if (stream) {
+                const tracks = stream.getTracks();
+                tracks.forEach(track => track.stop());
+                video.classList.add('hidden');
+                stream = null;
+            }
+        });
+    </script>
+</body>
+</html>
